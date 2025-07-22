@@ -1,0 +1,35 @@
+import telebot
+import requests
+
+# ВСТАВЬ СЮДА СВОИ ДАННЫЕ
+TELEGRAM_TOKEN = '7371339562:AAFK4MdoLax_7qCWZnBpvoFGLe9-e4ZLJ5c'
+ELEVENLABS_API_KEY = 'sk_f35262239c134ac93518dbdce0ec1f223a3094d63b7cf58d'
+VOICE_ID = 'EXAVITQu4vr4xnSDxMaL'  # если ты хочешь использовать кастомный голос, укажу потом
+
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+
+def generate_voice(text):
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+    headers = {
+        "xi-api-key": ELEVENLABS_API_KEY,
+        "Content-Type": "application/json"
+    }
+    data = {
+        "text": text,
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.75
+        }
+    }
+    response = requests.post(url, headers=headers, json=data)
+    with open("voice.mp3", "wb") as f:
+        f.write(response.content)
+    return "voice.mp3"
+
+@bot.message_handler(func=lambda message: True)
+def handle_message(message):
+    file_path = generate_voice(message.text)
+    with open(file_path, 'rb') as voice:
+        bot.send_voice(message.chat.id, voice)
+
+bot.polling()
